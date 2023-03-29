@@ -135,7 +135,7 @@ def immagini_pagina(url):
     driver.get(url)
     for i in [1000]:
         driver.execute_script(f"window.scrollTo(0, {i})")
-        time.sleep(1)
+        time.sleep(2)
     
 
     immagini = []
@@ -203,8 +203,6 @@ statistiche = {"attuale": primo, "data": secondo, "attivita" : terzo}  #creo le 
 
 #VARIABILI GLOBALI -----------------------------------------------------------------------------------------------------------------
 
-global link_utilizzato
-link_utilizzato = ''
 global immagini
 immagini = {}
 # -------------------------------------------------------------------------------------------------------------------------------------
@@ -300,27 +298,32 @@ def home():
         pass
     return render_template("home.html", title="Home Page", posts=posts, statistiche = statistiche, numero=8, 
                            immagine = immagine)
-
 @app.route("/pagina", methods=[ 'GET', 'POST']) #questa route permette di visualizzare l'articolo specifico su cui si è cliccato nella home
 def pagina():
     
     form = RispostaForm()
-    global link_utilizzato
     global immagini
     
     if request.method == 'POST':
-        id= int(db.session.execute(db.select(Page).filter_by(page_link=link_utilizzato)).scalar_one().id)
-        if form.validate_on_submit():
-                answer = Comments(
-                date_comment = datetime.strptime(datetime.now().strftime("%Y-%m-%d %H:%M:%S"),"%Y-%m-%d %H:%M:%S"),
-                comment_content = form.risposta.data,
-                page_id = id,
-                user_id = current_user.id
-                )
-                db.session.add(answer)
-                db.session.commit()
-                flash(f"Il tuo commento è stato pubblicato", category="success")
-                return redirect(f"/pagina?link='{link_utilizzato}'")
+        stringa_post = request.form.get('link').replace("\'", "")
+        print(stringa_post)
+        id= int(db.session.execute(db.select(Page).filter_by(page_link=stringa_post)).scalar_one().id)
+        if(current_user.is_authenticated):
+            if form.validate_on_submit():
+                    answer = Comments(
+                    date_comment = datetime.strptime(datetime.now().strftime("%Y-%m-%d %H:%M:%S"),"%Y-%m-%d %H:%M:%S"),
+                    comment_content = form.risposta.data,
+                    page_id = id,
+                    user_id = current_user.id
+                    )
+                    db.session.add(answer)
+                    db.session.commit()
+                    flash(f"Il tuo commento è stato pubblicato", category="success")
+                    return redirect(f"/pagina?link='{stringa_post}'")
+        else:
+            flash(f"Devi fare il login per poter commentare !", category="danger")
+            return redirect(f"/pagina?link='{stringa_post}'")
+        
     
     
     
@@ -338,12 +341,16 @@ def pagina():
 
         
        
-        if(stringa != link_utilizzato):
-            link_utilizzato = stringa
-            if(link_utilizzato not in list(immagini.keys())):
-                immagini[link_utilizzato] = []
-                while len(immagini[link_utilizzato])==0:
-                    immagini[link_utilizzato] = immagini_pagina(link_utilizzato)
+        
+    
+        if(stringa not in list(immagini.keys())):
+            immagini[stringa] = []
+            while len(immagini[stringa])==0:
+                immagini[stringa] = immagini_pagina(stringa)
+        else:
+            while len(immagini[stringa])==0:
+                immagini[stringa] = immagini_pagina(stringa)
+
 
 
         
@@ -363,8 +370,8 @@ def pagina():
             pass
    
 
-        return render_template("pagina.html", link=stringa, title="Articolo", numero=16, paragrafi = lista, titolo_articolo = titolo, immagini = immagini[link_utilizzato],
-                               form = form, risposte = risposte, immagine = immagine)
+        return render_template("pagina.html", link=stringa, title="Articolo", numero=16, paragrafi = lista, titolo_articolo = titolo, immagini = immagini[stringa],
+                               form = form, risposte = risposte, immagine = immagine, link_utilizzato = stringa)
 
 
 #ROUTES DEL FORUM
@@ -402,29 +409,38 @@ def new_post():
 
 @app.route("/new_answer", methods=['POST', 'GET']) #questa route permette di visualizzare le risposte pubblicate dagli utenti 
 @login_required
-def new_answer():    
+def new_answer():
     form = RispostaForm()
-    id= int(request.args.get('post').replace("\'", ""))
+    if request.method == 'POST':
+        id_post = int(request.form.get('post_id').replace("\'", ""))
+        print("ID : " , id_post)
+        if form.validate_on_submit():
+                answer = Risposte(
+                    date_answer = datetime.strptime(datetime.now().strftime("%Y-%m-%d %H:%M:%S"),"%Y-%m-%d %H:%M:%S"),
+                    answer_content = form.risposta.data,
+                    post_id = id_post,
+                    user_id = current_user.id
+                    )
+                db.session.add(answer)
+                db.session.commit()
+                flash(f"La risposta è stata pubblicata", category="success")
+                return redirect(f"/new_answer?post='{id_post}'")
+        
 
-    post = db.session.execute(db.select(Post).filter_by(id=id)).scalar_one()
-    autore = db.session.execute(db.select(User).filter_by(id=post.user_id)).scalar_one()
-    risposte = []
+    if request.method == 'GET':  
+        
+        id= int(request.args.get('post').replace("\'", ""))
+
+        post = db.session.execute(db.select(Post).filter_by(id=id)).scalar_one()
+        autore = db.session.execute(db.select(User).filter_by(id=post.user_id)).scalar_one()
+        risposte = []
     
-    for risposta in db.session.execute(db.select(Risposte).filter_by(post_id=post.id)).scalars():
-        dizionario = {"date_answer": risposta.date_answer, "answer_content": risposta.answer_content,
-                      "username": db.session.execute(db.select(User).filter_by(id=risposta.user_id)).scalar_one().username}
-        risposte.append(dizionario)
-    if form.validate_on_submit():
-            answer = Risposte(
-                date_answer = datetime.strptime(datetime.now().strftime("%Y-%m-%d %H:%M:%S"),"%Y-%m-%d %H:%M:%S"),
-                answer_content = form.risposta.data,
-                post_id = id,
-                user_id = current_user.id
-                )
-            db.session.add(answer)
-            db.session.commit()
-            flash(f"La risposta è stata pubblicata", category="success")
-            return redirect(f"/new_answer?post='{id}'")
+        for risposta in db.session.execute(db.select(Risposte).filter_by(post_id=post.id)).scalars():
+            dizionario = {"date_answer": risposta.date_answer, "answer_content": risposta.answer_content,
+                        "username": db.session.execute(db.select(User).filter_by(id=risposta.user_id)).scalar_one().username}
+            risposte.append(dizionario)
+
+  
 
     immagine = []
     try:
@@ -433,7 +449,7 @@ def new_answer():
         pass
 
     return render_template(f"new_answer.html", title="Forum", form = form, numero = 12, post = post,
-                            autore = autore.username, risposte = risposte, immagine = immagine)
+                            autore = autore.username, risposte = risposte, immagine = immagine, id=id)
     
 
 #ROUTES DELL'UTENTE
