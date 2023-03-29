@@ -341,7 +341,10 @@ def pagina():
         if(stringa != link_utilizzato):
             link_utilizzato = stringa
             if(link_utilizzato not in list(immagini.keys())):
-                immagini[link_utilizzato] = immagini_pagina(link_utilizzato)
+                immagini[link_utilizzato] = []
+                while len(immagini[link_utilizzato])==0:
+                    immagini[link_utilizzato] = immagini_pagina(link_utilizzato)
+
 
         
         soup = html_code(stringa)
