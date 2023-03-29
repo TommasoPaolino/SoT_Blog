@@ -1,0 +1,36 @@
+{% extends "layout.html" %}
+{% block content %}
+    {% for post in posts %}
+
+            <article class="media content-section">
+              <div class="media-body">
+                <div class="article-metadata">
+                  <div>Fonte:<a class="mr-2" href= {{ post.fonte }}> {{ post.fonte }}  </a>
+                    <small class="text-muted">{{ post.date }}</small></div>
+                 
+                </div>
+                <h2><a class="article-title" href= "/pagina?link='{{post.link}}'">{{ post.title }}</a></h2>
+                <p class="article-content">{{ post.content }}</p>
+              </div>
+            </article>
+
+    {% endfor %}
+{% endblock content %}
+
+{% block stats %}
+<div class="col-md-4"><div class="content-section">
+  <h3>Informazioni</h3>
+  <p class='text-muted'>
+    <ul class="list-group">
+    <li class="list-group-item list-group-item-light">Numero giocatori: {{statistiche.attuale}} Persone</li>
+    <li class="list-group-item list-group-item-light">Ultimo controllo: {{statistiche.data}}</li>
+    {% if statistiche.attivita %}
+    <li class="list-group-item list-group-item-light" style="color:green">Server: Attivo</li>
+
+    {% else %}
+    <li class="list-group-item list-group-item-light" style="color:red;">Server: Non Attivo </li>
+    {% endif %}
+    </ul>
+  </p>
+  </div>
+{% endblock stats %}

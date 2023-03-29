@@ -1,0 +1,64 @@
+
+{% extends "layout.html" %}
+{% block content %}
+
+
+<div class="content-section">
+    <form method="POST" action="">
+
+        {{form.hidden_tag()}}
+
+        <fieldset class="form-group">
+            <legend class="border-bottom mb-4"> Crea Post</legend>
+
+            <div class="form-group">
+                {{ form.titolo.label(class="form-control-label") }}
+                {% if form.titolo.errors %}
+                    {{ form.titolo(class="form-control form-control-lg is-invalid")}}
+                    {% for error in form.titolo.errors%}
+                        <div>
+                            <span> {{ error }} </span>
+                        </div>
+                    {% endfor%}
+                {% else %}
+                    {{ form.titolo(class="form-control form-control-lg")}}
+                {% endif%}
+            </div>
+
+
+            <div class="form-group">
+                {{ form.domanda.label(class="form-control-label") }}
+                {% if form.domanda.errors %}
+                        {{ form.domanda(class="form-control form-control-lg is-invalid")}}
+                        {% for error in form.domanda.errors%}
+                        <div>
+                            <span> {{ error }} </span>
+                        </div>
+                        {% endfor%}
+                {% else %}
+                    {{ form.domanda(class="form-control form-control-lg")}}
+                {% endif%}
+            </div>
+
+            <div class="form-group">
+                {{form.submit(class="btn btn-outline-info")}}
+            </div>
+        </fieldset>
+    </form>
+    {% for post in posts %}
+
+    <article class="media content-section">
+      <div class="media-body">
+        <div class="article-metadata">
+          <div>Autore: {{post.autore}}
+            <small class="text-muted"> {{ post.date }}</small></div>
+         
+        </div>
+        <h2><a class="article-title" href= "/new_answer?post='{{post.id}}'">{{ post.title }}</a></h2>
+        <p class="article-content">{{ post.content }}</p>
+      </div>
+    </article>
+
+{% endfor %}
+</div>
+{% endblock content %}

@@ -1,0 +1,62 @@
+
+{% extends "layout.html" %}
+{% block content %}
+<h1>{{titolo_articolo}}</h1>
+<img src= {{immagini[0]}} width="100%" >
+<p></p>
+
+{% for paragrafo in paragrafi %}
+
+<p style="text-align: center;">{{paragrafo.text}}</p>
+
+
+{% endfor %}
+<h1>Commenti</h1>
+<br><br>
+{% for risposta in risposte %}
+
+<article class="media content-section">
+  <div class="media-body">
+    <div class="article-metadata">
+      <div>Autore: {{risposta.username}}
+        <small class="text-muted"> {{ risposta.date_answer }}</small></div>
+     
+    </div>
+    <p class="article-content">{{ risposta.comment_content }}</p>
+  </div>
+</article>
+  {% endfor %}
+
+<form method="POST" action="">
+
+    {{form.hidden_tag()}}
+  
+    <fieldset class="form-group">
+  
+  
+        <div class="form-group">
+            {{ form.risposta.label(class="form-control-label") }}
+            {% if form.risposta.errors %}
+                    {{ form.risposta(class="form-control form-control-lg is-invalid")}}
+                    {% for error in form.risposta.errors%}
+                    <div>
+                        <span> {{ error }} </span>
+                    </div>
+                    {% endfor%}
+            {% else %}
+                {{ form.risposta(class="form-control form-control-lg")}}
+            {% endif%}
+        </div>
+  
+        <div class="form-group">
+            {{form.submit(class="btn btn-outline-info")}}
+        </div>
+    </fieldset>
+  </form>
+
+
+{% endblock content %}
+
+
+
+

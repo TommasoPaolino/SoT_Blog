@@ -1,0 +1,70 @@
+
+{% extends "layout.html" %}
+{% block content %}
+
+
+<div class="content-section">
+    
+  <article class="media content-section">
+    <div class="media-body">
+      <div class="article-metadata">
+        <div>Autore: {{autore}}
+          <small class="text-muted"> {{ post.date_posted }}</small></div>
+       
+      </div>
+      <h2><a class="article-title">{{ post.title }}</a></h2>
+      <p class="article-content">{{ post.post_content }}</p>
+    
+    </div>
+  </article>
+
+  
+
+
+    {% for risposta in risposte %}
+
+    <article class="media content-section">
+      <div class="media-body">
+        <div class="article-metadata">
+          <div>Autore: {{risposta.username}}
+            <small class="text-muted"> {{ risposta.date_answer }}</small></div>
+         
+        </div>
+        <p class="article-content">{{ risposta.answer_content }}</p>
+      </div>
+    </article>
+      {% endfor %}
+
+    
+    
+<form method="POST" action="">
+
+  {{form.hidden_tag()}}
+
+  <fieldset class="form-group">
+
+
+      <div class="form-group">
+          {{ form.risposta.label(class="form-control-label") }}
+          {% if form.risposta.errors %}
+                  {{ form.risposta(class="form-control form-control-lg is-invalid")}}
+                  {% for error in form.risposta.errors%}
+                  <div>
+                      <span> {{ error }} </span>
+                  </div>
+                  {% endfor%}
+          {% else %}
+              {{ form.risposta(class="form-control form-control-lg")}}
+          {% endif%}
+      </div>
+
+      <div class="form-group">
+          {{form.submit(class="btn btn-outline-info")}}
+      </div>
+  </fieldset>
+</form>
+
+
+
+</div>
+{% endblock content %}
