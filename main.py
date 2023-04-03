@@ -237,6 +237,15 @@ class RegistrationForm(FlaskForm):
                                                  DataRequired(),
                                                  EqualTo('password')])
     submit = SubmitField('Register Now!')
+    def validate_email(self, email):
+        user = User.query.filter_by(email=email.data).first()
+        if user:
+            raise ValidationError('Email already registered')
+
+    def validate_username(self, username):
+        user = User.query.filter_by(username=username.data).first()
+        if user:
+            raise ValidationError('Username already registered')
 
 class ResetForm(FlaskForm):
     email = StringField('Email', validators=[
